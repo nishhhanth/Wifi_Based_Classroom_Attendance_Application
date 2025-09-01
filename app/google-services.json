@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1093764075057",
+    "firebase_url": "https://wifi-classroom-attendance-default-rtdb.firebaseio.com",
+    "project_id": "wifi-classroom-attendance",
+    "storage_bucket": "wifi-classroom-attendance.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1093764075057:android:c193fa0fd5d7b93b928f10",
+        "android_client_info": {
+          "package_name": "com.example.wifibasedattendanceapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdE9-WDLRjK2I3YlINY0O_9FimUvhV6xA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
