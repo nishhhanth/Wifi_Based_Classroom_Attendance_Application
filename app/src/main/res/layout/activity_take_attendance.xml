@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center"
+    >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white"
+    android:gravity="center">
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:src="@drawable/image_attendance_two" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="Take Attendance"
+        android:fontFamily="serif"
+        android:textSize="40sp"
+        android:textStyle="bold|italic"
+        android:textAlignment="center"
+        android:layout_marginVertical="40dp"/>
+    <Spinner
+        android:id="@+id/branchSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp"
+        android:background="@drawable/style_spinner"
+        />
+
+    <Spinner
+        android:id="@+id/divisionSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp"
+        android:background="@drawable/style_spinner"
+        />
+
+    <Spinner
+        android:id="@+id/groupSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp"
+        android:background="@drawable/style_spinner"
+        />
+
+    <Spinner
+        android:id="@+id/subjectSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp"
+        android:background="@drawable/style_spinner"
+        />
+
+    <Button
+        android:id="@+id/btn_startAttendanceSession"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="20dp"
+        android:layout_height="wrap_content"
+        android:text="@string/start_attendance_session"
+        android:layout_marginVertical="20dp"
+        android:textSize="17dp"
+        android:textAllCaps="false"
+        android:background="@drawable/style_button"/>
+
+</LinearLayout>
+
+</ScrollView>
