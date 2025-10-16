@@ -20,9 +20,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class TakeAttendanceActivity extends BaseAuthenticatedActivity {
-    Spinner branchSpinner,groupSpinner,divisionSpinner,subjectSpinner;
+    Spinner branchSpinner,divisionSpinner,subjectSpinner;
     Button btn_startAttendanceSession;
-    String[] branchArray,divisionArray, groupArray, subjectArray;
+    String[] branchArray,divisionArray, subjectArray;
     private static final String PREFS_NAME = "attendance_prefs";
     private static final String KEY_ACTIVE_SESSION_ID = "active_session_id";
 
@@ -49,14 +49,12 @@ public class TakeAttendanceActivity extends BaseAuthenticatedActivity {
 
                     String selectedBranch = branchSpinner.getSelectedItem().toString();
                     String selectedDivision = divisionSpinner.getSelectedItem().toString();
-                    String selectedGroup = groupSpinner.getSelectedItem().toString();
                     String selectedSubject = subjectSpinner.getSelectedItem().toString();
 
                     Intent intent = new Intent(getApplicationContext(), activity_session.class);
 
                     intent.putExtra("branch", selectedBranch);
                     intent.putExtra("division", selectedDivision);
-                    intent.putExtra("group", selectedGroup);
                     intent.putExtra("subject", selectedSubject);
 
                     startActivity(intent);
@@ -70,13 +68,11 @@ public class TakeAttendanceActivity extends BaseAuthenticatedActivity {
     private boolean isSelectionValid() {
         return (branchSpinner.getSelectedItemPosition() > 0) &&
                 (subjectSpinner.getSelectedItemPosition() > 0) &&
-                (groupSpinner.getSelectedItemPosition() > 0) &&
                 (divisionSpinner.getSelectedItemPosition() > 0);
     }
 
     private void Init() {
         branchSpinner = findViewById(R.id.branchSpinner);
-        groupSpinner = findViewById(R.id.groupSpinner);
         divisionSpinner = findViewById(R.id.divisionSpinner);
         subjectSpinner = findViewById(R.id.subjectSpinner);
 
@@ -94,11 +90,7 @@ public class TakeAttendanceActivity extends BaseAuthenticatedActivity {
         divisionSpinner.setAdapter(divisionArrayAdapter);
         divisionSpinner.setSelection(0, false);
 
-        groupArray = getResources().getStringArray(R.array.group_array);
-        ArrayAdapter<String> groupArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, groupArray);
-        groupArrayAdapter.setDropDownViewResource(R.layout.spinner_list);
-        groupSpinner.setAdapter(groupArrayAdapter);
-        groupSpinner.setSelection(0, false);
+        // group spinner removed
 
         subjectArray = getResources().getStringArray(R.array.subject_array);
         ArrayAdapter<String> subjectArrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, subjectArray);

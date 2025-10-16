@@ -4,7 +4,7 @@
     <string name="student_login">Student Login</string>
     <string name="branch_spinner_hint">Select Branch</string>
     <string name="div_spinner_hint">Select Division</string>
-    <string name="group_spinner_hint">Select Group</string>
+    
     <string name="start_attendance_session">Start Attendance Session</string>
 
     <string-array name="branch_array">
@@ -29,23 +29,7 @@
         <item>Div - 6</item>
     </string-array>
 
-    <string-array name="group_array">
-        <item>Select Group: ‎ ‎ ‎ ‎ ‎ ‎‎ ‎‎‎‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎
-            ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎
-            ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎  ‎ ‎  ▼</item>
-        <item>Group 1</item>
-        <item>Group 2</item>
-        <item>Group 3</item>
-        <item>Group 4</item>
-        <item>Group 5</item>
-        <item>Group 6</item>
-        <item>Group 7</item>
-        <item>Group 8</item>
-        <item>Group 9</item>
-        <item>Group 10</item>
-        <item>Group 11</item>
-        <item>Group 12</item>
-    </string-array>
+    
 
     <string-array name="subject_array">
         <item>Select Subject: ‎ ‎ ‎ ‎ ‎ ‎‎ ‎‎‎‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎

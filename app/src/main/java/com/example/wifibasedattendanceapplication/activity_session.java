@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class activity_session extends BaseAuthenticatedActivity {
-    String branch, division, group, subject;
+    String branch, division, subject;
     private String sessionId;
     private static final String PREFS_NAME = "attendance_prefs";
     private static final String KEY_ACTIVE_SESSION_ID = "active_session_id";
@@ -50,7 +50,6 @@ public class activity_session extends BaseAuthenticatedActivity {
         if (intent != null) {
             branch = intent.getStringExtra("branch");
             division = intent.getStringExtra("division");
-            group = intent.getStringExtra("group");
             subject = intent.getStringExtra("subject");
             // If coming to resume a session, set sessionId and skip creation
             String resumeSessionId = intent.getStringExtra("resumeSessionId");
@@ -278,12 +277,10 @@ public class activity_session extends BaseAuthenticatedActivity {
 
         // Convert full names to abbreviated values for database consistency
         String abbreviatedDivision = convertDivisionToAbbreviation(division);
-        String abbreviatedGroup = convertGroupToAbbreviation(group);
 
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("branch", branch);
         sessionData.put("division", abbreviatedDivision); // Use abbreviated value
-        sessionData.put("group", abbreviatedGroup); // Use abbreviated value
         sessionData.put("period_date", formattedDate);
         sessionData.put("start_time", startTime);
         sessionData.put("end_time", s_endTime);
@@ -331,23 +328,7 @@ public class activity_session extends BaseAuthenticatedActivity {
         return fullDivision;
     }
     
-    /**
-     * Converts full group names to abbreviated values for database consistency
-     */
-    private String convertGroupToAbbreviation(String fullGroup) {
-        if (fullGroup == null) return "";
-        
-        // Convert "Group 1" to "1", "Group 2" to "2", etc.
-        if (fullGroup.contains("Group 1")) return "1";
-        if (fullGroup.contains("Group 2")) return "2";
-        if (fullGroup.contains("Group 3")) return "3";
-        if (fullGroup.contains("Group 4")) return "4";
-        if (fullGroup.contains("Group 5")) return "5";
-        
-        // If no match found, return the original value
-        Log.w("Debug", "Unknown group format: " + fullGroup + ", using as-is");
-        return fullGroup;
-    }
+    // Group removed: no conversion needed
 
     /**
      * Creates a Students section inside AttendanceReport/{sessionId}
@@ -363,11 +344,9 @@ public class activity_session extends BaseAuthenticatedActivity {
         
         // Convert full names to abbreviated values for comparison
         String abbreviatedDivision = convertDivisionToAbbreviation(division);
-        String abbreviatedGroup = convertGroupToAbbreviation(group);
         
         Log.d("Debug", "Creating students section for session: " + sessionId + 
-              " with division: " + division + " -> " + abbreviatedDivision + 
-              " and group: " + group + " -> " + abbreviatedGroup);
+              " with division: " + division + " -> " + abbreviatedDivision);
         
         DatabaseReference studentsRef = FirebaseDatabase.getInstance().getReference("Students");
         DatabaseReference sessionStudentsRef = FirebaseDatabase.getInstance()
@@ -387,13 +366,12 @@ public class activity_session extends BaseAuthenticatedActivity {
                     for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
                         String enrollmentNo = studentSnapshot.getKey();
                         String studentDivision = studentSnapshot.child("Division").getValue(String.class);
-                        String studentGroup = studentSnapshot.child("Group").getValue(String.class);
                         
                         Log.d("Debug", "Checking student: " + enrollmentNo + 
-                              " (Division: " + studentDivision + ", Group: " + studentGroup + ")");
+                              " (Division: " + studentDivision + ")");
                         
-                        // Only include students from the specific division and group (using abbreviated values)
-                        if (abbreviatedDivision.equals(studentDivision) && abbreviatedGroup.equals(studentGroup)) {
+                        // Only include students from the specific division
+                        if (abbreviatedDivision.equals(studentDivision)) {
                             matchingStudentsCount++;
                             Log.d("Debug", "Student " + enrollmentNo + " matches session criteria");
 
@@ -424,8 +402,7 @@ public class activity_session extends BaseAuthenticatedActivity {
                             initializedCount++;
                         } else {
                             Log.d("Debug", "Student " + enrollmentNo + " does not match session criteria " +
-                                  "(Division: " + abbreviatedDivision + " vs " + studentDivision + 
-                                  ", Group: " + abbreviatedGroup + " vs " + studentGroup + ")");
+                                  "(Division: " + abbreviatedDivision + " vs " + studentDivision + ")");
                         }
                     }
                     
@@ -435,14 +412,14 @@ public class activity_session extends BaseAuthenticatedActivity {
                           ", Initialized: " + initializedCount);
                     
                     if (matchingStudentsCount == 0) {
-                        Log.w("Debug", "No students found matching division: " + abbreviatedDivision + " and group: " + abbreviatedGroup);
+                        Log.w("Debug", "No students found matching division: " + abbreviatedDivision);
                         Toast.makeText(activity_session.this, 
-                            "Warning: No students found for Division " + abbreviatedDivision + " and Group " + abbreviatedGroup, 
+                            "Warning: No students found for Division " + abbreviatedDivision, 
                             Toast.LENGTH_LONG).show();
                     } else {
                         Log.d("Debug", "Successfully included " + matchingStudentsCount + " students in session");
                         Toast.makeText(activity_session.this, 
-                            "Session created with " + matchingStudentsCount + " students from Division " + abbreviatedDivision + " and Group " + abbreviatedGroup, 
+                            "Session created with " + matchingStudentsCount + " students from Division " + abbreviatedDivision, 
                             Toast.LENGTH_SHORT).show();
                     }
                 } else {

@@ -80,7 +80,6 @@ public class SelectAttendanceActivity extends AppCompatActivity {
                     // Load session details
                     String branch = safeString(dataSnapshot.child("branch").getValue());
                     String division = safeString(dataSnapshot.child("division").getValue());
-                    String group = safeString(dataSnapshot.child("group").getValue());
                     String subject = safeString(dataSnapshot.child("subject").getValue());
                     String periodDate = safeString(dataSnapshot.child("period_date").getValue());
                     String startTime = safeString(dataSnapshot.child("start_time").getValue());
@@ -100,11 +99,11 @@ public class SelectAttendanceActivity extends AppCompatActivity {
                         return;
                     }
                     
-                    // Validate that student belongs to this session's division and group
-                    validateStudentDivisionAndGroup(division, group);
+                    // Validate that student belongs to this session's division
+                    validateStudentDivision(division);
                     
                     // Update UI with session data
-                    updateUI(branch, division, group, subject, periodDate, startTime, endTime);
+                    updateUI(branch, division, subject, periodDate, startTime, endTime);
                     
                     // Check current attendance status
                     checkCurrentAttendanceStatus();
@@ -123,7 +122,7 @@ public class SelectAttendanceActivity extends AppCompatActivity {
         });
     }
     
-    private void validateStudentDivisionAndGroup(String sessionDivision, String sessionGroup) {
+    private void validateStudentDivision(String sessionDivision) {
         // Get student's division and group from Firebase
         DatabaseReference studentRef = FirebaseDatabase.getInstance().getReference("Students").child(studentEnrollment);
         studentRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -131,30 +130,27 @@ public class SelectAttendanceActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot studentSnapshot) {
                 if (studentSnapshot.exists()) {
                     String studentDivision = studentSnapshot.child("Division").getValue(String.class);
-                    String studentGroup = studentSnapshot.child("Group").getValue(String.class);
                     
-                    Log.d(TAG, "Student " + studentEnrollment + " has Division: " + studentDivision + ", Group: " + studentGroup);
-                    Log.d(TAG, "Session has Division: " + sessionDivision + ", Group: " + sessionGroup);
+                    Log.d(TAG, "Student " + studentEnrollment + " has Division: " + studentDivision);
+                    Log.d(TAG, "Session has Division: " + sessionDivision);
                     
-                    if (studentDivision == null || studentGroup == null) {
+                    if (studentDivision == null) {
                         Toast.makeText(SelectAttendanceActivity.this, 
-                            "Student division or group information is missing. Please contact administrator.", 
+                            "Student division information is missing. Please contact administrator.", 
                             Toast.LENGTH_LONG).show();
                         finish();
                         return;
                     }
                     
-                    // Check if student belongs to this session's division and group
-                    if (!sessionDivision.equals(studentDivision) || !sessionGroup.equals(studentGroup)) {
+                    // Check if student belongs to this session's division
+                    if (!sessionDivision.equals(studentDivision)) {
                         // Convert abbreviations to display names for user-friendly messages
                         String displaySessionDivision = convertAbbreviationToDisplayName(sessionDivision);
-                        String displaySessionGroup = convertAbbreviationToDisplayName(sessionGroup);
                         String displayStudentDivision = convertAbbreviationToDisplayName(studentDivision);
-                        String displayStudentGroup = convertAbbreviationToDisplayName(studentGroup);
                         
                         String message = "You are not authorized to mark attendance for this session. " +
-                                       "This session is for Division " + displaySessionDivision + " and Group " + displaySessionGroup + 
-                                       ", but you belong to Division " + displayStudentDivision + " and Group " + displayStudentGroup + ".";
+                                       "This session is for Division " + displaySessionDivision +
+                                       ", but you belong to Division " + displayStudentDivision + ".";
                         Toast.makeText(SelectAttendanceActivity.this, message, Toast.LENGTH_LONG).show();
                         Log.w(TAG, "Student division/group mismatch: " + message);
                         finish();
@@ -243,7 +239,7 @@ public class SelectAttendanceActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUI(String branch, String division, String group, String subject, 
+    private void updateUI(String branch, String division, String subject, 
                          String periodDate, String startTime, String endTime) {
         // Update date and time
         if (dateTextView != null) {

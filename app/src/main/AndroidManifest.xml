@@ -58,6 +58,21 @@
         <activity
             android:name=".activity_presence_recorded"
             android:exported="true" />
+        <activity
+            android:name=".AttendanceOverviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HolidayAndAttendanceCalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FeesActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

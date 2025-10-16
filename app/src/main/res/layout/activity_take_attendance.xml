@@ -49,15 +49,6 @@
         />
 
     <Spinner
-        android:id="@+id/groupSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:padding="10dp"
-        android:background="@drawable/style_spinner"
-        />
-
-    <Spinner
         android:id="@+id/subjectSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

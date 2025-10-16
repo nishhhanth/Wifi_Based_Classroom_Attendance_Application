@@ -28,6 +28,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.ServerValue;
 
 import java.util.List;
 import java.util.HashMap;
@@ -170,15 +171,13 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
         String studentName = studentSnapshot.child("student_name").getValue(String.class);
         String studentEmail = studentSnapshot.child("student_email").getValue(String.class);
         String studentDivision = studentSnapshot.child("Division").getValue(String.class);
-        String studentGroup = studentSnapshot.child("Group").getValue(String.class);
         
         Log.d("SubmitAttendance", "Student data verification:");
         Log.d("SubmitAttendance", "  Name: " + studentName);
         Log.d("SubmitAttendance", "  Email: " + studentEmail);
         Log.d("SubmitAttendance", "  Division: " + studentDivision);
-        Log.d("SubmitAttendance", "  Group: " + studentGroup);
         
-        if (studentName == null || studentEmail == null || studentDivision == null || studentGroup == null) {
+        if (studentName == null || studentEmail == null || studentDivision == null) {
             Log.w("SubmitAttendance", "Student data is incomplete");
         }
     }
@@ -206,27 +205,26 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
         // First, let's clean up expired sessions
         cleanupExpiredSessions();
         
-        // Get student's division and group first
+        // Get student's division first
         DatabaseReference studentRef = FirebaseDatabase.getInstance().getReference("Students").child(currentStudentEnrollment);
         studentRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot studentSnapshot) {
                 if (studentSnapshot.exists()) {
                     String studentDivision = studentSnapshot.child("Division").getValue(String.class);
-                    String studentGroup = studentSnapshot.child("Group").getValue(String.class);
                     
-                    if (studentDivision == null || studentGroup == null) {
+                    if (studentDivision == null) {
                         Toast.makeText(SubmitAttendanceActivity.this, 
-                            "Student division or group information is missing. Please contact administrator.", 
+                            "Student division information is missing. Please contact administrator.", 
                             Toast.LENGTH_LONG).show();
                         return;
                     }
                     
                     Log.d("SubmitAttendance", "Student " + currentStudentEnrollment + 
-                          " belongs to Division: " + studentDivision + ", Group: " + studentGroup);
+                          " belongs to Division: " + studentDivision);
                     
-                    // Now check for active sessions matching student's division and group
-                    checkSessionsForStudentDivision(studentDivision, studentGroup);
+                    // Now check for active sessions matching student's division
+                    checkSessionsForStudentDivision(studentDivision);
                 } else {
                     Toast.makeText(SubmitAttendanceActivity.this, 
                         "Student information not found. Please contact administrator.", 
@@ -244,10 +242,10 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
         });
     }
     
-    private void checkSessionsForStudentDivision(String studentDivision, String studentGroup) {
-        Log.d("SubmitAttendance", "Checking for sessions matching Division: " + studentDivision + ", Group: " + studentGroup);
+    private void checkSessionsForStudentDivision(String studentDivision) {
+        Log.d("SubmitAttendance", "Checking for sessions matching Division: " + studentDivision);
         
-        // Check for active sessions that match student's division and group
+        // Check for active sessions that match student's division
         attendanceReportRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -257,28 +255,26 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
                 long currentTime = System.currentTimeMillis();
                 long bestSessionTime = 0;
                 
-                // Find the most recent active session matching student's division and group
+                // Find the most recent active session matching student's division
                 for (DataSnapshot sessionSnapshot : dataSnapshot.getChildren()) {
                     String sessionKey = sessionSnapshot.getKey();
                     String sessionDivision = sessionSnapshot.child("division").getValue(String.class);
-                    String sessionGroup = sessionSnapshot.child("group").getValue(String.class);
                     String sessionStatus = sessionSnapshot.child("session_status").getValue(String.class);
                     Long endTimestamp = sessionSnapshot.child("end_timestamp").getValue(Long.class);
                     Long timestamp = sessionSnapshot.child("timestamp").getValue(Long.class);
                     
                     Log.d("SubmitAttendance", "Checking session: " + sessionKey + 
                           " with division: " + sessionDivision + 
-                          ", group: " + sessionGroup + 
                           ", status: " + sessionStatus + 
                           ", end_timestamp: " + endTimestamp);
                     
-                    // Check if session matches student's division and group
-                    if (!studentDivision.equals(sessionDivision) || !studentGroup.equals(sessionGroup)) {
-                        Log.d("SubmitAttendance", "Session " + sessionKey + " does not match student's division/group");
+                    // Check if session matches student's division
+                    if (!studentDivision.equals(sessionDivision)) {
+                        Log.d("SubmitAttendance", "Session " + sessionKey + " does not match student's division");
                         continue;
                     }
                     
-                    Log.d("SubmitAttendance", "Session " + sessionKey + " matches student's division/group!");
+                    Log.d("SubmitAttendance", "Session " + sessionKey + " matches student's division!");
                     
                     if (timestamp != null) {
                         // Check if session is active and within time limits
@@ -314,27 +310,23 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
                 
                 if (activeSessionId != null) {
                     Log.d("SubmitAttendance", "Found active session: " + activeSessionId + 
-                          " for Division: " + studentDivision + ", Group: " + studentGroup);
+                          " for Division: " + studentDivision);
                     // Check if student is part of this session
                     checkStudentInSession(activeSessionId);
                 } else {
-                    Log.w("SubmitAttendance", "No active sessions found for Division: " + studentDivision + 
-                          ", Group: " + studentGroup);
+                    Log.w("SubmitAttendance", "No active sessions found for Division: " + studentDivision);
                     
                     // Show more helpful message with conversion info
                     String displayDivision = convertAbbreviationToDisplayName(studentDivision);
-                    String displayGroup = convertAbbreviationToDisplayName(studentGroup);
-                    
-                    String message = "No active attendance sessions found for your Division (" + displayDivision + 
-                                   ") and Group (" + displayGroup + "). Please wait for faculty to start a session.";
+                    String message = "No active attendance sessions found for your Division (" + displayDivision + "). Please wait for faculty to start a session.";
                     Toast.makeText(SubmitAttendanceActivity.this, message, Toast.LENGTH_LONG).show();
                     
                     Log.d("SubmitAttendance", "Display message: " + message);
                     
                     // First, scan for any already-ended sessions we haven't notified about
-                    scanForEndedSessionsAndNotify(studentDivision, studentGroup, dataSnapshot);
+                    scanForEndedSessionsAndNotify(studentDivision, dataSnapshot);
                     // Then start real-time monitoring for future sessions/changes
-                    startRealTimeSessionMonitoring(studentDivision, studentGroup);
+                    startRealTimeSessionMonitoring(studentDivision);
                 }
             }
 
@@ -347,24 +339,27 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
         });
     }
 
-    private void scanForEndedSessionsAndNotify(String studentDivision, String studentGroup, @NonNull DataSnapshot allSessions) {
+    private void scanForEndedSessionsAndNotify(String studentDivision, @NonNull DataSnapshot allSessions) {
         String latestEndedSessionId = null;
         String latestSubject = null;
         String latestPeriodDate = null;
         long latestEndTs = 0L;
+        long now = System.currentTimeMillis();
+        long notifyWindowMs = 2 * 60 * 60 * 1000; // only consider sessions ended within last 2 hours
 
         for (DataSnapshot sessionSnapshot : allSessions.getChildren()) {
             String sessionKey = sessionSnapshot.getKey();
             if (sessionKey == null) continue;
 
             String sessionDivision = sessionSnapshot.child("division").getValue(String.class);
-            String sessionGroupVal = sessionSnapshot.child("group").getValue(String.class);
             String sessionStatus = sessionSnapshot.child("session_status").getValue(String.class);
             Long endTs = sessionSnapshot.child("end_timestamp").getValue(Long.class);
 
-            if (!studentDivision.equals(sessionDivision) || !studentGroup.equals(sessionGroupVal)) continue;
+            if (!studentDivision.equals(sessionDivision)) continue;
             if (!"ended".equals(sessionStatus)) continue;
             if (hasNotified(sessionKey)) continue;
+            if (endTs == null) continue; // require a valid end timestamp to bound recency
+            if (now - endTs > notifyWindowMs) continue; // skip old sessions to avoid repeat notifications on login
 
             long candidateEnd = endTs == null ? 0L : endTs;
             if (candidateEnd >= latestEndTs) {
@@ -383,8 +378,8 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
     /**
      * Starts real-time monitoring for new sessions matching the student's division and group
      */
-    private void startRealTimeSessionMonitoring(String studentDivision, String studentGroup) {
-        Log.d("SubmitAttendance", "Starting real-time session monitoring for Division: " + studentDivision + ", Group: " + studentGroup);
+    private void startRealTimeSessionMonitoring(String studentDivision) {
+        Log.d("SubmitAttendance", "Starting real-time session monitoring for Division: " + studentDivision);
 
         attendanceReportRef.addChildEventListener(new ChildEventListener() {
             @Override
@@ -394,7 +389,6 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
             public void onChildChanged(@NonNull DataSnapshot sessionSnapshot, String previousChildName) {
                 String sessionKey = sessionSnapshot.getKey();
                 String sessionDivision = sessionSnapshot.child("division").getValue(String.class);
-                String sessionGroupVal = sessionSnapshot.child("group").getValue(String.class);
                 String sessionStatus = sessionSnapshot.child("session_status").getValue(String.class);
                 Long timestamp = sessionSnapshot.child("timestamp").getValue(Long.class);
                 String subject = sessionSnapshot.child("subject").getValue(String.class);
@@ -403,7 +397,7 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
                 if (sessionKey == null) return;
 
                 // Resume redirect on new active session
-                if (studentDivision.equals(sessionDivision) && studentGroup.equals(sessionGroupVal) &&
+                if (studentDivision.equals(sessionDivision) &&
                         "active".equals(sessionStatus) && timestamp != null) {
                     Log.d("SubmitAttendance", "Real-time: Found active session change: " + sessionKey);
                     Toast.makeText(SubmitAttendanceActivity.this,
@@ -413,7 +407,7 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
                 }
 
                 // Notify only once when a session transitions to ended (debounced)
-                if (studentDivision.equals(sessionDivision) && studentGroup.equals(sessionGroupVal) &&
+                if (studentDivision.equals(sessionDivision) &&
                         "ended".equals(sessionStatus) && !hasNotified(sessionKey)) {
                     // Delay slightly to allow final status writes to propagate
                     new android.os.Handler().postDelayed(() -> {
@@ -494,6 +488,19 @@ public class SubmitAttendanceActivity extends BaseAuthenticatedActivity {
         int notifId = sessionId.hashCode();
         NotificationHelper.notifyAttendanceResult(SubmitAttendanceActivity.this, notifId, title, message);
         markNotified(sessionId);
+        // Also persist a remote flag so re-installs or new devices don't re-notify
+        try {
+            if (currentStudentEnrollment != null) {
+                FirebaseDatabase.getInstance()
+                        .getReference("Students")
+                        .child(currentStudentEnrollment)
+                        .child("NotificationFlags")
+                        .child(sessionId)
+                        .setValue(ServerValue.TIMESTAMP);
+            }
+        } catch (Exception e) {
+            Log.w("SubmitAttendance", "Failed to write remote notification flag: " + e.getMessage());
+        }
     }
 
     private String mapAttendanceCode(String code) {

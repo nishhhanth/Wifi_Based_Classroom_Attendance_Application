@@ -346,8 +346,7 @@ public class AttendanceReportActivity extends BaseAuthenticatedActivity {
                     header.createCell(1).setCellValue("Student Name");
                     header.createCell(2).setCellValue("Student Email");
                     header.createCell(3).setCellValue("Division");
-                    header.createCell(4).setCellValue("Group");
-                    header.createCell(5).setCellValue("Attendance");
+                    header.createCell(4).setCellValue("Attendance");
 
                     // 3) Try to read a session-level students map (case-insensitive key)
                     DataSnapshot sessionStudentsSnap = getFirstPresentChild(sessionSnap, "students", "Students");
@@ -442,13 +441,11 @@ public class AttendanceReportActivity extends BaseAuthenticatedActivity {
         String name = safeString(studentSnap.child("student_name").getValue());
         String email = safeString(studentSnap.child("student_email").getValue());
         String division = safeString(studentSnap.child("Division").getValue());
-        String group = safeString(studentSnap.child("Group").getValue());
 
         row.createCell(1).setCellValue(name);
         row.createCell(2).setCellValue(email);
         row.createCell(3).setCellValue(division);
-        row.createCell(4).setCellValue(group);
-        row.createCell(5).setCellValue(status);
+        row.createCell(4).setCellValue(status);
     }
 
     /**
@@ -498,13 +495,11 @@ public class AttendanceReportActivity extends BaseAuthenticatedActivity {
                 }
 
                 String sessionDivision = safeString(sessionSnap.child("division").getValue());
-                String sessionGroup = safeString(sessionSnap.child("group").getValue());
+                Log.d(TAG, "Session has Division: " + sessionDivision);
                 
-                Log.d(TAG, "Session has Division: " + sessionDivision + ", Group: " + sessionGroup);
-                
-                if (sessionDivision.isEmpty() || sessionGroup.isEmpty()) {
-                    Log.e(TAG, "Session missing division or group information");
-                    Toast.makeText(AttendanceReportActivity.this, "Session missing division/group information!", Toast.LENGTH_SHORT).show();
+                if (sessionDivision.isEmpty()) {
+                    Log.e(TAG, "Session missing division information");
+                    Toast.makeText(AttendanceReportActivity.this, "Session missing division information!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -518,10 +513,9 @@ public class AttendanceReportActivity extends BaseAuthenticatedActivity {
                         for (DataSnapshot student : studentsSnap.getChildren()) {
                             String enrollment = student.getKey();
                             String studentDivision = safeString(student.child("Division").getValue());
-                            String studentGroup = safeString(student.child("Group").getValue());
                             
-                            // Check if student belongs to this session's division and group
-                            if (sessionDivision.equals(studentDivision) && sessionGroup.equals(studentGroup)) {
+                            // Check if student belongs to this session's division
+                            if (sessionDivision.equals(studentDivision)) {
                                 // Check if student is already in the session
                                 DataSnapshot sessionStudentsSnap = sessionSnap.child("Students");
                                 if (!sessionStudentsSnap.child(enrollment).exists()) {

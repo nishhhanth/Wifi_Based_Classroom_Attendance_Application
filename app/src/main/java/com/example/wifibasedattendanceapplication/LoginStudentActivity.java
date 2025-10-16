@@ -243,13 +243,13 @@ public class LoginStudentActivity extends AppCompatActivity implements TextWatch
                 String existingHardwareId = dataSnapshot.getValue(String.class);
                 if (existingHardwareId == null||existingHardwareId.isEmpty()) {
                     enrollmentRef.child("hardware_id").setValue(macAddress);
-                    startActivity(new Intent(getApplicationContext(), SubmitAttendanceActivity.class));
+                    startActivity(new Intent(getApplicationContext(), DashboardActivity.class));
                     Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
                     closeProgressDialog();
                 }
                 else if (macAddress.equals(existingHardwareId)) {
                     // Same device login - allow login
-                    startActivity(new Intent(getApplicationContext(), SubmitAttendanceActivity.class));
+                    startActivity(new Intent(getApplicationContext(), DashboardActivity.class));
                     Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
                     closeProgressDialog();
                 }
