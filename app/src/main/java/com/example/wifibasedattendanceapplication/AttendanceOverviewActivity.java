@@ -58,8 +58,6 @@ public class AttendanceOverviewActivity extends AppCompatActivity {
 		studentsRef = FirebaseDatabase.getInstance().getReference("Students");
 		reportsRef = FirebaseDatabase.getInstance().getReference("AttendanceReport");
 
-        findViewById(R.id.btn_download_pdf).setOnClickListener(v -> Log.d(TAG, "Download PDF clicked"));
-
 		findViewById(R.id.btn_back).setOnClickListener(v -> onBackPressed());
 	}
 

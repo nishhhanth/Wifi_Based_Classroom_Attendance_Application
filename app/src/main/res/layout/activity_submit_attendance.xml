@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".SubmitAttendanceActivity"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="?android:colorBackground"
     android:gravity="center">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/white">
+        android:background="?android:colorBackground">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -31,7 +31,7 @@
     android:textStyle="bold"
     android:textSize="20dp"
     android:layout_margin="20dp"
-    android:textColor="#b3b3b3"
+    android:textColor="?attr/colorOnBackground"
     android:textAlignment="center"/>
     
     <Button
@@ -41,11 +41,11 @@
         android:text="Test WiFi Connection"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:textSize="17sp"
         android:padding="10dp"
-        android:backgroundTint="#2196F3"/>
+        android:backgroundTint="?attr/colorPrimary"/>
         
     <Button
         android:id="@+id/btn_refresh"
@@ -54,11 +54,11 @@
         android:text="Refresh Sessions"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textStyle="bold"
         android:textSize="17sp"
         android:padding="10dp"
-        android:backgroundTint="#4CAF50"/>
+        android:backgroundTint="?attr/colorPrimary"/>
         
     <Button
         android:id="@+id/btn_logout"
@@ -67,11 +67,11 @@
         android:text="Log Out"
         android:layout_gravity="center"
         android:drawableEnd="@drawable/icon_logout"
-        android:drawableTint="@color/black"
-        android:textColor="@color/black"
+        android:drawableTint="?attr/colorOnSurface"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         android:textSize="17sp"
         android:padding="10dp"
         android:drawablePadding="10dp"
-        android:backgroundTint="#b3b3b3"/>
+        android:backgroundTint="?attr/colorSurface"/>
 </LinearLayout>

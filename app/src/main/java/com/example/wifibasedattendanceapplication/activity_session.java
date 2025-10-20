@@ -44,6 +44,9 @@ public class activity_session extends BaseAuthenticatedActivity {
         ImageView gifImageView = findViewById(R.id.loading);
 
         Button btn = findViewById(R.id.end_session);
+        android.widget.Button applyBtn = findViewById(R.id.btn_apply_network_settings);
+        android.widget.EditText ssidInput = findViewById(R.id.input_required_ssid);
+        android.widget.CheckBox allowUniWifi = findViewById(R.id.chk_allow_university_wifi);
 
         Glide.with(this).asGif().load(R.drawable.loading).into(gifImageView);
         Intent intent = getIntent();
@@ -71,6 +74,40 @@ public class activity_session extends BaseAuthenticatedActivity {
             public void onClick(View view) {
                 // Show confirmation dialog before ending session
                 showEndSessionConfirmation();
+            }
+        });
+
+        applyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (sessionId == null || sessionId.trim().isEmpty()) {
+                    Toast.makeText(activity_session.this, "Session not ready yet. Please wait...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String ssid = ssidInput.getText() == null ? null : ssidInput.getText().toString().trim();
+                boolean allowUniversity = allowUniWifi.isChecked();
+
+                Map<String, Object> updates = new HashMap<>();
+                if (ssid != null && !ssid.isEmpty()) {
+                    updates.put("required_ssid", ssid);
+                } else {
+                    // Clear if empty input provided
+                    updates.put("required_ssid", null);
+                }
+                updates.put("allow_university_wifi", allowUniversity);
+
+                DatabaseReference sessionRef = FirebaseDatabase.getInstance()
+                        .getReference("AttendanceReport")
+                        .child(sessionId);
+
+                sessionRef.updateChildren(updates).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(activity_session.this, "Network settings applied", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(activity_session.this, "Failed to apply settings", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
@@ -289,6 +326,13 @@ public class activity_session extends BaseAuthenticatedActivity {
         sessionData.put("end_timestamp", endTimeMillis);
         sessionData.put("session_status", "active"); // active, ended, or expired
         sessionData.put("start_time_millis", startTimeMillis);
+        // Optional: faculty can pass hotspot SSID via intent extra "requiredSsid"
+        try {
+            String facultySsid = getIntent() != null ? getIntent().getStringExtra("requiredSsid") : null;
+            if (facultySsid != null && !facultySsid.trim().isEmpty()) {
+                sessionData.put("required_ssid", facultySsid);
+            }
+        } catch (Exception ignored) { }
 
         newReportRef.setValue(sessionData).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

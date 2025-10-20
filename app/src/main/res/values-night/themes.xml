@@ -1,7 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.WifiBasedAttendanceApplication" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Night variant of the app theme to ensure dark mode applies consistently -->
+    <style name="Theme.WifiBasedAttendanceApplication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#00bbff</item>
+        <item name="colorPrimaryVariant">@color/main_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorAccent">@color/blue_main</item>
+        <item name="android:colorAccent">@color/blue_main</item>
+        <item name="colorControlActivated">@color/blue_main</item>
+        <item name="colorSecondary">@color/white</item>
+        <item name="colorSecondaryVariant">@color/white</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 </resources>

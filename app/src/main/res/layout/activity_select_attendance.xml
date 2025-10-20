@@ -9,13 +9,13 @@
     android:orientation="vertical"
     android:padding="20dp"
     android:gravity="center"
-    android:background="#00bbff">
+    android:background="?android:colorBackground">
 
 <androidx.cardview.widget.CardView
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="25dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="?attr/colorSurface"
     android:layout_gravity="center"
     android:layout_marginTop="20dp">
 
@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="25dp"
-        app:cardBackgroundColor="#E1E1E1"
+        app:cardBackgroundColor="?attr/colorSurface"
         android:layout_gravity="center">
     <LinearLayout
         android:layout_width="wrap_content"
@@ -46,7 +46,7 @@
             android:id="@+id/date_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:text="Loading..."
             android:fontFamily="serif"
             android:textSize="30sp"
@@ -60,7 +60,7 @@
             android:id="@+id/time_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:text="Loading..."
             android:fontFamily="serif"
             android:textSize="25sp"
@@ -92,7 +92,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center|end"
             android:text="Enrollment :"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -102,7 +102,7 @@
             android:layout_height="match_parent"
             android:fontFamily="sans-serif"
             android:text="Loading..."
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="20sp"
             android:gravity="center|start"
             android:layout_marginHorizontal="10dp"
@@ -126,7 +126,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center|end"
             android:text="Subject :"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
@@ -135,7 +135,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
             android:text="Loading..."
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="20sp"
             android:gravity="center|start"
             android:layout_weight="1"
@@ -155,10 +155,10 @@
         android:layout_gravity="center"
         android:layout_marginTop="30dp"
         android:layout_marginHorizontal="70dp"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="?attr/colorPrimary"
         android:drawableEnd="@drawable/hand_raise"
-        android:drawableTint="@color/black"
-        android:textColor="@color/black"
+        android:drawableTint="?attr/colorOnPrimary"
+        android:textColor="?attr/colorOnPrimary"
         android:text="Loading..."
         android:textSize="25sp"
         android:padding="10dp"

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="?android:colorBackground"
     android:padding="12dp">
 
     <LinearLayout
@@ -22,7 +22,7 @@
             android:background="@drawable/tab_segment_bg"
             android:text="ATTENDANCE"
             android:textStyle="bold"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:padding="6dp"/>
 
         <Space
@@ -38,7 +38,7 @@
             android:background="@drawable/tab_segment_bg"
             android:text="HOLIDAY"
             android:textStyle="bold"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:padding="6dp"/>
     </LinearLayout>
 
@@ -54,10 +54,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/CalendarTheme"
-            android:background="@color/white"
+            android:background="?attr/colorSurface"
             android:selectedDateVerticalBar="@drawable/selected_date_indicator"
-            android:unfocusedMonthDateColor="@color/text_secondary"
-            android:focusedMonthDateColor="@color/black"
+            android:unfocusedMonthDateColor="@color/calendar_text_secondary"
+            android:focusedMonthDateColor="@color/calendar_text_primary"
+            android:selectedWeekBackgroundColor="@color/calendar_selected_bg_light"
             android:weekDayTextAppearance="@style/CalendarWeekDayText"
             android:dateTextAppearance="@style/CalendarDateText"/>
 
@@ -81,10 +82,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/CalendarTheme"
-            android:background="@color/white"
+            android:background="?attr/colorSurface"
             android:selectedDateVerticalBar="@drawable/selected_date_indicator"
-            android:unfocusedMonthDateColor="@color/text_secondary"
-            android:focusedMonthDateColor="@color/black"
+            android:unfocusedMonthDateColor="@color/calendar_text_secondary"
+            android:focusedMonthDateColor="@color/calendar_text_primary"
+            android:selectedWeekBackgroundColor="@color/calendar_selected_bg_light"
             android:weekDayTextAppearance="@style/CalendarWeekDayText"
             android:dateTextAppearance="@style/CalendarDateText"/>
 

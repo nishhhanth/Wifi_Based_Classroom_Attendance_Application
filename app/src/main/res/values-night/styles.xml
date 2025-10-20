@@ -13,7 +13,8 @@
         <item name="android:dateTextAppearance">@style/CalendarDateTextDark</item>
 
         <!-- Background -->
-        <item name="android:background">@color/black</item>
+        <item name="android:background">@color/calendar_bg</item>
+        <item name="android:selectedWeekBackgroundColor">@color/calendar_selected_bg_dark</item>
     </style>
 
     <!-- Weekday text (dark) -->

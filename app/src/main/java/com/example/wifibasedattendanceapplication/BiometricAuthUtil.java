@@ -51,15 +51,15 @@ public final class BiometricAuthUtil {
         };
 
         try {
-            // Prefer strong biometrics, but allow device credential fallback to avoid crashes on non-enrolled devices
-            int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG |
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+            // Only use strong biometrics - no password/PIN fallback to prevent proxy attendance
+            int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
 
             BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle(title)
                     .setSubtitle(subtitle)
                     .setAllowedAuthenticators(authenticators)
                     .setConfirmationRequired(false)
+                    .setNegativeButtonText("Cancel")
                     .build();
 
             BiometricPrompt biometricPrompt = new BiometricPrompt(activity, executor, authCallback);

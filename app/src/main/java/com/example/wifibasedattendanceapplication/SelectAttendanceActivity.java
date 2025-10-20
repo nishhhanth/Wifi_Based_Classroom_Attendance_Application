@@ -32,6 +32,11 @@ public class SelectAttendanceActivity extends AppCompatActivity {
     private String studentEnrollment;
     private DatabaseReference sessionRef;
     private DatabaseReference studentAttendanceRef;
+    private String requiredSsid; // Optional SSID that must be connected (faculty hotspot)
+    private boolean allowUniversityWifi; // If true, allow recognized university Wi‑Fi as an alternative
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 3211;
+    private int biometricRetryCount = 0;
+    private static final int MAX_BIOMETRIC_RETRIES = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +91,15 @@ public class SelectAttendanceActivity extends AppCompatActivity {
                     String endTime = safeString(dataSnapshot.child("end_time").getValue());
                     String sessionStatus = safeString(dataSnapshot.child("session_status").getValue());
                     Long endTimestamp = dataSnapshot.child("end_timestamp").getValue(Long.class);
+                    // Optional: read required SSID if faculty configured
+                    requiredSsid = dataSnapshot.child("required_ssid").getValue(String.class);
+                    if (requiredSsid == null || requiredSsid.trim().isEmpty()) {
+                        // Backward-compat alias
+                        requiredSsid = dataSnapshot.child("hotspot_ssid").getValue(String.class);
+                    }
+                    // Optional: read flag to allow university Wi‑Fi as alternative network
+                    Boolean allowFlag = dataSnapshot.child("allow_university_wifi").getValue(Boolean.class);
+                    allowUniversityWifi = allowFlag != null && allowFlag;
                     
                     // Validate session status and time
                     if (!validateSessionStatus(sessionStatus, endTimestamp)) {
@@ -303,6 +317,37 @@ public class SelectAttendanceActivity extends AppCompatActivity {
         presentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Ensure location permissions for SSID visibility on Android 8+
+                if ((requiredSsid != null && !requiredSsid.trim().isEmpty()) || allowUniversityWifi) {
+                    if (!hasLocationPermissions()) {
+                        Toast.makeText(SelectAttendanceActivity.this,
+                                "Please allow Location permission to verify Wi‑Fi network",
+                                Toast.LENGTH_LONG).show();
+                        requestLocationPermissions();
+                        return;
+                    }
+                }
+                // Network enforcement prior to biometric
+                if (requiredSsid != null && !requiredSsid.trim().isEmpty()) {
+                    // Faculty hotspot required; allow uni Wi‑Fi if flag set
+                    boolean onFacultyHotspot = isConnectedToRequiredSsid(requiredSsid);
+                    boolean onUniversityWifi = allowUniversityWifi && isConnectedToUniversityNetwork();
+                    if (!(onFacultyHotspot || onUniversityWifi)) {
+                        String msg = allowUniversityWifi
+                                ? ("Connect to faculty hotspot: " + requiredSsid + " or approved university Wi‑Fi")
+                                : ("Please connect to faculty hotspot: " + requiredSsid);
+                        Toast.makeText(SelectAttendanceActivity.this, msg, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                } else if (allowUniversityWifi) {
+                    // No hotspot specified, but faculty allowed uni Wi‑Fi → require recognized campus network
+                    if (!isConnectedToUniversityNetwork()) {
+                        Toast.makeText(SelectAttendanceActivity.this,
+                                "Please connect to approved university Wi‑Fi to mark attendance",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
                 // Require strong biometric authentication before marking attendance
                 if (!BiometricAuthUtil.isStrongBiometricAvailable(SelectAttendanceActivity.this)) {
                     Toast.makeText(SelectAttendanceActivity.this,
@@ -314,35 +359,119 @@ public class SelectAttendanceActivity extends AppCompatActivity {
                 presentButton.setEnabled(false);
                 presentButton.setText("Authenticating...");
 
-                BiometricAuthUtil.authenticate(SelectAttendanceActivity.this,
-                        "Verify identity",
-                        "Authenticate to mark your attendance",
-                        new BiometricAuthUtil.Callback() {
-                            @Override
-                            public void onAuthenticated() {
-                                markAttendancePresent();
-                            }
-
-                            @Override
-                            public void onFailed(@NonNull String reason) {
-                                Toast.makeText(SelectAttendanceActivity.this,
-                                        "Authentication failed. Please try again.",
-                                        Toast.LENGTH_SHORT).show();
-                                presentButton.setEnabled(true);
-                                presentButton.setText("Mark Present");
-                            }
-
-                            @Override
-                            public void onError(int code, @NonNull String message) {
-                                Toast.makeText(SelectAttendanceActivity.this,
-                                        message,
-                                        Toast.LENGTH_SHORT).show();
-                                presentButton.setEnabled(true);
-                                presentButton.setText("Mark Present");
-                            }
-                        });
+                authenticateWithBiometric();
             }
         });
+    }
+
+    private void authenticateWithBiometric() {
+        BiometricAuthUtil.authenticate(SelectAttendanceActivity.this,
+                "Verify identity",
+                biometricRetryCount > 0 ? "Authentication failed. Try again." : "Authenticate to mark your attendance",
+                new BiometricAuthUtil.Callback() {
+                    @Override
+                    public void onAuthenticated() {
+                        // Reset retry count on successful authentication
+                        biometricRetryCount = 0;
+                        markAttendancePresent();
+                    }
+
+                    @Override
+                    public void onFailed(@NonNull String reason) {
+                        biometricRetryCount++;
+                        if (biometricRetryCount <= MAX_BIOMETRIC_RETRIES) {
+                            // Give another try
+                            Toast.makeText(SelectAttendanceActivity.this,
+                                    "Authentication failed. Trying again...",
+                                    Toast.LENGTH_SHORT).show();
+                            authenticateWithBiometric();
+                        } else {
+                            // Max retries reached
+                            biometricRetryCount = 0; // Reset for next attempt
+                            Toast.makeText(SelectAttendanceActivity.this,
+                                    "Authentication failed after multiple attempts. Please try again later.",
+                                    Toast.LENGTH_LONG).show();
+                            presentButton.setEnabled(true);
+                            presentButton.setText("Mark Present");
+                        }
+                    }
+
+                    @Override
+                    public void onError(int code, @NonNull String message) {
+                        biometricRetryCount = 0; // Reset on error
+                        Toast.makeText(SelectAttendanceActivity.this,
+                                message,
+                                Toast.LENGTH_SHORT).show();
+                        presentButton.setEnabled(true);
+                        presentButton.setText("Mark Present");
+                    }
+                });
+    }
+
+    private boolean isConnectedToRequiredSsid(@NonNull String required) {
+        try {
+            android.net.wifi.WifiManager wifiManager = (android.net.wifi.WifiManager) getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+            if (wifiManager == null || !wifiManager.isWifiEnabled()) return false;
+            android.net.wifi.WifiInfo info = wifiManager.getConnectionInfo();
+            if (info == null) return false;
+            String ssid = info.getSSID();
+            if (ssid == null || ssid.isEmpty()) return false;
+            // Remove quotes if Android returns quoted SSID
+            if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
+                ssid = ssid.substring(1, ssid.length() - 1);
+            }
+            String normalizedCurrent = ssid.trim().toLowerCase();
+            String normalizedRequired = required.trim().toLowerCase();
+            return normalizedRequired.equals(normalizedCurrent);
+        } catch (SecurityException se) {
+            // Missing location permission will cause unknown SSID on Android 8+
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isConnectedToUniversityNetwork() {
+        try {
+            android.net.wifi.WifiManager wifiManager = (android.net.wifi.WifiManager) getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+            if (wifiManager == null || !wifiManager.isWifiEnabled()) return false;
+            android.net.wifi.WifiInfo info = wifiManager.getConnectionInfo();
+            if (info == null) return false;
+            String ssid = info.getSSID();
+            String bssid = info.getBSSID();
+            if (ssid != null && ssid.startsWith("\"") && ssid.endsWith("\"")) {
+                ssid = ssid.substring(1, ssid.length() - 1);
+            }
+            // Delegate recognition to WifiConfig definitions
+            if (com.example.wifibasedattendanceapplication.WifiConfig.isUniversityWiFiSSID(ssid)) return true;
+            return com.example.wifibasedattendanceapplication.WifiConfig.isUniversityWiFiBSSID(bssid);
+        } catch (SecurityException se) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean hasLocationPermissions() {
+        return androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                && androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestLocationPermissions() {
+        androidx.core.app.ActivityCompat.requestPermissions(this,
+                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                LOCATION_PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            if (!granted) {
+                Toast.makeText(this, "Location permission is required to verify Wi‑Fi network", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void markAttendancePresent() {

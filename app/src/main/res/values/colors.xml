@@ -6,6 +6,7 @@
     <color name="calendar_bg">#FFFFFFFF</color>
     <color name="calendar_text_primary">#000000</color>
     <color name="calendar_text_secondary">#757575</color>
+    <color name="calendar_selected_bg_light">#E0E0E0</color>
     <color name="tab_text">#000000</color>
 
     <!-- Existing palette (kept as-is) -->
@@ -86,5 +87,11 @@
     <color name="error_color">#F44336</color>
     <color name="warning_color">#FF9800</color>
     <color name="light_gray">#E0E0E0</color>
+    
+    <!-- Chat colors -->
+    <color name="chat_background">#F8F9FA</color>
+    <color name="chat_user_bubble">#007AFF</color>
+    <color name="chat_bot_bubble">#F2F2F7</color>
+    <color name="chat_error_bubble">#FF3B30</color>
 
 </resources>

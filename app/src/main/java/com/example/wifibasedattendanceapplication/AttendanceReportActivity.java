@@ -86,12 +86,6 @@ public class AttendanceReportActivity extends BaseAuthenticatedActivity {
 
         downloadBtn.setOnClickListener(v -> performDatabaseOperation(() -> exportExcelFile()));
         
-        // Add refresh button for debugging
-        Button refreshBtn = findViewById(R.id.btn_refresh_stats);
-        if (refreshBtn != null) {
-            refreshBtn.setOnClickListener(v -> performDatabaseOperation(() -> loadAttendanceStatistics()));
-        }
-        
         // Add finish button functionality: logout and clear back stack
         Button finishBtn = findViewById(R.id.btn_finish);
         if (finishBtn != null) {

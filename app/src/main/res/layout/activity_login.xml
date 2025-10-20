@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/white"
+    android:background="?android:colorBackground"
     tools:context=".LoginActivity">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnBackground"
         android:text="Wifi Attendance Application"
         android:fontFamily="serif"
         android:textSize="35sp"

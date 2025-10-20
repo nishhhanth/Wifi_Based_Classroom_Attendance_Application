@@ -6,6 +6,10 @@
         <item name="colorPrimary">#00bbff</item>
         <item name="colorPrimaryVariant">@color/main_700</item>
         <item name="colorOnPrimary">@color/white</item>
+        <!-- Ensure CalendarView selection has contrast in both modes -->
+        <item name="colorAccent">@color/blue_main</item>
+        <item name="android:colorAccent">@color/blue_main</item>
+        <item name="colorControlActivated">@color/blue_main</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/white</item>
         <item name="colorSecondaryVariant">@color/white</item>
@@ -30,14 +34,13 @@
     </style>
 
     <style name="textInputLayout_style" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <item name="android:textColorHint">#0E1625</item>
-        <item name="hintTextColor">#252525</item>
-        <item name="boxStrokeColor">#252525</item>
+        <item name="android:textColorHint">?attr/colorOnSurface</item>
+        <item name="hintTextColor">?attr/colorOnSurface</item>
+        <item name="boxStrokeColor">?attr/colorOnSurface</item>
         <item name="boxStrokeErrorColor">@color/color_700</item>
         <item name="errorTextColor">@color/color_700</item>
         <item name="boxStrokeWidth">2dp</item>
-        <item name="helperTextTextColor">@color/color_700</item>
+        <item name="helperTextTextColor">?attr/colorOnSurface</item>
         <item name="boxCornerRadiusBottomEnd">10dp</item>
         <item name="boxCornerRadiusBottomStart">10dp</item>
         <item name="boxCornerRadiusTopEnd">10dp</item>

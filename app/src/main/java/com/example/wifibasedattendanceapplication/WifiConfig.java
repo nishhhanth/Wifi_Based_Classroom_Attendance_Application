@@ -5,7 +5,6 @@ public class WifiConfig {
     // University WiFi Network Names (SSIDs)
     // Add all possible WiFi network names your university uses
     public static final String[] UNIVERSITY_WIFI_SSIDS = {
-        "vivo1920",
         "PU-Student_WiFi"
         // Add more SSIDs as needed
     };

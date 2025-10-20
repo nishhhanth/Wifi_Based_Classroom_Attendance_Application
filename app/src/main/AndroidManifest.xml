@@ -73,6 +73,10 @@
         <activity
             android:name=".FeesActivity"
             android:exported="false" />
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false"
+            android:theme="@style/Theme.WifiBasedAttendanceApplication" />
     </application>
 
 </manifest>

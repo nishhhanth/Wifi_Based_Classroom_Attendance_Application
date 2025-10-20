@@ -18,12 +18,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DashboardActivity extends BaseAuthenticatedActivity {
 
     private TextView tvGreeting, tvStudentDetails, tvAcademicYear, tvAttendancePercentage, tvFeesStatus;
-    private CardView cardAttendance, cardFees, cardMarkAttendance, cardAssignment, cardHoliday, 
-                     cardTimetable, cardResult, cardDatesheet, cardDoubts, cardGallery, 
-                     cardLeave, cardPassword, cardEvents, cardLogout;
+    private CardView cardAttendance, cardFees, cardMarkAttendance, cardHoliday, 
+                     cardAiAssistant, cardLogout;
     
     private String currentStudentEnrollment;
     private DatabaseReference studentsRef;
@@ -63,16 +65,8 @@ public class DashboardActivity extends BaseAuthenticatedActivity {
         cardAttendance = findViewById(R.id.card_attendance);
         cardFees = findViewById(R.id.card_fees);
         cardMarkAttendance = findViewById(R.id.card_mark_attendance);
-        cardAssignment = findViewById(R.id.card_assignment);
         cardHoliday = findViewById(R.id.card_holiday);
-        cardTimetable = findViewById(R.id.card_timetable);
-        cardResult = findViewById(R.id.card_result);
-        cardDatesheet = findViewById(R.id.card_datesheet);
-        cardDoubts = findViewById(R.id.card_doubts);
-        cardGallery = findViewById(R.id.card_gallery);
-        cardLeave = findViewById(R.id.card_leave);
-        cardPassword = findViewById(R.id.card_password);
-        cardEvents = findViewById(R.id.card_events);
+        cardAiAssistant = findViewById(R.id.card_ai_assistant);
         cardLogout = findViewById(R.id.card_logout);
 
         // Profile image opens profile page
@@ -101,53 +95,12 @@ public class DashboardActivity extends BaseAuthenticatedActivity {
             startActivity(new Intent(this, SubmitAttendanceActivity.class));
         });
 
-        cardAssignment.setOnClickListener(v -> {
-            showToast("Opening Assignments...");
-            // TODO: Implement assignment activity
-        });
-
         cardHoliday.setOnClickListener(v -> {
             startActivity(new Intent(this, HolidayAndAttendanceCalendarActivity.class));
         });
 
-        cardTimetable.setOnClickListener(v -> {
-            showToast("Opening Time Table...");
-            // TODO: Implement timetable activity
-        });
-
-        cardResult.setOnClickListener(v -> {
-            showToast("Opening Results...");
-            // TODO: Implement result activity
-        });
-
-        cardDatesheet.setOnClickListener(v -> {
-            showToast("Opening Date Sheet...");
-            // TODO: Implement datesheet activity
-        });
-
-        cardDoubts.setOnClickListener(v -> {
-            showToast("Opening Doubts Section...");
-            // TODO: Implement doubts activity
-        });
-
-        cardGallery.setOnClickListener(v -> {
-            showToast("Opening School Gallery...");
-            // TODO: Implement gallery activity
-        });
-
-        cardLeave.setOnClickListener(v -> {
-            showToast("Opening Leave Application...");
-            // TODO: Implement leave application activity
-        });
-
-        cardPassword.setOnClickListener(v -> {
-            showToast("Opening Change Password...");
-            // TODO: Implement change password activity
-        });
-
-        cardEvents.setOnClickListener(v -> {
-            showToast("Opening Events...");
-            // TODO: Implement events activity
+        cardAiAssistant.setOnClickListener(v -> {
+            startActivity(new Intent(this, ChatActivity.class));
         });
 
         cardLogout.setOnClickListener(v -> {
@@ -215,14 +168,18 @@ public class DashboardActivity extends BaseAuthenticatedActivity {
             tvStudentDetails.setText("Student Details");
         }
         
-        tvAcademicYear.setText("2024-2025"); // You can make this dynamic too
+        if (tvAcademicYear != null) {
+            tvAcademicYear.setText("2024-2025"); // Optional if view present
+        }
     }
     
     private void loadDefaultUserData() {
         // Set default values when student data is not available
         tvGreeting.setText("Hi Student");
         tvStudentDetails.setText("Student Details");
-        tvAcademicYear.setText("2024-2025");
+        if (tvAcademicYear != null) {
+            tvAcademicYear.setText("2024-2025");
+        }
         tvAttendancePercentage.setText("N/A");
         tvFeesStatus.setText("N/A");
     }
@@ -245,34 +202,84 @@ public class DashboardActivity extends BaseAuthenticatedActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    int totalSessions = 0;
-                    int presentSessions = 0;
+                    final int[] totalSessions = {0};
+                    final int[] presentSessions = {0};
                     
                     Log.d("Dashboard", "Found " + dataSnapshot.getChildrenCount() + " attendance records");
                     
+                    // Get all session IDs first
+                    List<String> sessionIds = new ArrayList<>();
+                    for (DataSnapshot sessionSnapshot : dataSnapshot.getChildren()) {
+                        sessionIds.add(sessionSnapshot.getKey());
+                    }
+                    
+                    if (sessionIds.isEmpty()) {
+                        tvAttendancePercentage.setText("0.00 %");
+                        return;
+                    }
+                    
+                    final int totalToFetch = sessionIds.size();
+                    final int[] fetched = new int[]{0};
+                    
+                    // Process each session to check if it has valid subject data
                     for (DataSnapshot sessionSnapshot : dataSnapshot.getChildren()) {
                         String sessionId = sessionSnapshot.getKey();
                         String attendanceStatus = sessionSnapshot.getValue(String.class);
-                        totalSessions++;
                         
-                        Log.d("Dashboard", "Session " + sessionId + ": " + attendanceStatus);
-                        
-                        if ("P".equalsIgnoreCase(attendanceStatus)) {
-                            presentSessions++;
-                        }
+                        // Check if this session has valid subject data
+                        DatabaseReference reportsRef = FirebaseDatabase.getInstance().getReference("AttendanceReport");
+                        reportsRef.child(sessionId).child("subject")
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot subjectSnap) {
+                                    String subject = subjectSnap.getValue(String.class);
+                                    
+                                    // Only count sessions with valid subject data
+                                    if (subject != null && !subject.isEmpty()) {
+                                        totalSessions[0]++;
+                                        
+                                        Log.d("Dashboard", "Session " + sessionId + ": " + attendanceStatus + " (Subject: " + subject + ")");
+                                        
+                                        if ("P".equalsIgnoreCase(attendanceStatus) || "Present".equalsIgnoreCase(attendanceStatus)) {
+                                            presentSessions[0]++;
+                                        }
+                                    }
+                                    
+                                    fetched[0] += 1;
+                                    if (fetched[0] == totalToFetch) {
+                                        // Calculate percentage
+                                        double percentage = 0.0;
+                                        if (totalSessions[0] > 0) {
+                                            percentage = (double) presentSessions[0] / totalSessions[0] * 100;
+                                        }
+                                        
+                                        // Update UI with calculated percentage
+                                        String percentageText = String.format("%.2f %%", percentage);
+                                        tvAttendancePercentage.setText(percentageText);
+                                        
+                                        Log.d("Dashboard", "Final calculation: " + presentSessions[0] + " present out of " + totalSessions[0] + " total = " + percentageText);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    fetched[0] += 1;
+                                    if (fetched[0] == totalToFetch) {
+                                        // Calculate percentage
+                                        double percentage = 0.0;
+                                        if (totalSessions[0] > 0) {
+                                            percentage = (double) presentSessions[0] / totalSessions[0] * 100;
+                                        }
+                                        
+                                        // Update UI with calculated percentage
+                                        String percentageText = String.format("%.2f %%", percentage);
+                                        tvAttendancePercentage.setText(percentageText);
+                                        
+                                        Log.d("Dashboard", "Final calculation: " + presentSessions[0] + " present out of " + totalSessions[0] + " total = " + percentageText);
+                                    }
+                                }
+                            });
                     }
-                    
-                    // Calculate percentage
-                    double percentage = 0.0;
-                    if (totalSessions > 0) {
-                        percentage = (double) presentSessions / totalSessions * 100;
-                    }
-                    
-                    // Update UI with calculated percentage
-                    String percentageText = String.format("%.2f %%", percentage);
-                    tvAttendancePercentage.setText(percentageText);
-                    
-                    Log.d("Dashboard", "Final calculation: " + presentSessions + " present out of " + totalSessions + " total = " + percentageText);
                 } else {
                     Log.d("Dashboard", "No attendance records found for student: " + currentStudentEnrollment);
                     tvAttendancePercentage.setText("0.00 %");

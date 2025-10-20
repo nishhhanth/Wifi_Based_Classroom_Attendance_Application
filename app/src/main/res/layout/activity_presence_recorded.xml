@@ -28,19 +28,6 @@
         android:textSize="40sp"
         android:textStyle="bold|italic" />
 
-    <Button
-        android:id="@+id/show_report"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:text="Show Attendance Report"
-        android:layout_marginHorizontal="50dp"
-        android:background="@drawable/style_button"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:textSize="20sp"
-        android:textAllCaps="false"
-        />
 
     <Button
         android:id="@+id/exit"

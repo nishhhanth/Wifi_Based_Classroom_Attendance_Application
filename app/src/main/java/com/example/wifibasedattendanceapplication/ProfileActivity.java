@@ -15,28 +15,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-/**
- * Displays the student's profile by reading from Firebase Realtime Database.
- * The activity looks up the current user's email and queries the `Students` node
- * by `student_email` to load the record. All fields render with safe fallbacks
- * so the screen is always populated even if some values are missing.
- */
 public class ProfileActivity extends BaseAuthenticatedActivity {
 
     private static final String TAG = "ProfileActivity";
 
+    private TextView tvAcademicYear;
+    private TextView tvStudentEmail;
     private TextView tvName;
     private TextView tvClassRoll;
-    private TextView tvAadhar;
-    private TextView tvAcademicYear;
-    private TextView tvAdmissionClass;
-    private TextView tvOldAdmissionNo;
-    private TextView tvDateOfAdmission;
-    private TextView tvDateOfBirth;
-    private TextView tvParentMailId;
-    private TextView tvMotherName;
-    private TextView tvFatherName;
-    private TextView tvPermanentAddress;
     private ImageView btnBack;
     private TextView btnDone;
 
@@ -58,18 +44,10 @@ public class ProfileActivity extends BaseAuthenticatedActivity {
         btnBack = findViewById(R.id.iv_back);
         btnDone = findViewById(R.id.tv_done);
 
+        tvAcademicYear = findViewById(R.id.tv_academic_year_value);
+        tvStudentEmail = findViewById(R.id.tv_student_email_value);
         tvName = findViewById(R.id.tv_name);
         tvClassRoll = findViewById(R.id.tv_class_roll);
-        tvAadhar = findViewById(R.id.tv_aadhar);
-        tvAcademicYear = findViewById(R.id.tv_academic_year_value);
-        tvAdmissionClass = findViewById(R.id.tv_admission_class_value);
-        tvOldAdmissionNo = findViewById(R.id.tv_old_admission_no_value);
-        tvDateOfAdmission = findViewById(R.id.tv_date_of_admission_value);
-        tvDateOfBirth = findViewById(R.id.tv_date_of_birth_value);
-        tvParentMailId = findViewById(R.id.tv_parent_mail_id_value);
-        tvMotherName = findViewById(R.id.tv_mother_name_value);
-        tvFatherName = findViewById(R.id.tv_father_name_value);
-        tvPermanentAddress = findViewById(R.id.tv_permanent_address_value);
     }
 
     private void setupClicks() {
@@ -117,9 +95,7 @@ public class ProfileActivity extends BaseAuthenticatedActivity {
         String name = getStringValue(s, "student_name", "Student");
         String division = getStringValue(s, "Division", null);
         String rollNo = getStringValue(s, "roll_no", null);
-
         tvName.setText(name);
-
         String classRoll;
         if (division != null || rollNo != null) {
             String classPart = (division != null ? "Class " + division : null);
@@ -129,32 +105,19 @@ public class ProfileActivity extends BaseAuthenticatedActivity {
             classRoll = "Class";
         }
         tvClassRoll.setText(classRoll);
-
-        tvAadhar.setText(getStringValue(s, "aadhar_no", ""));
         tvAcademicYear.setText(getStringValue(s, "academic_year", "2024-2025"));
-        tvAdmissionClass.setText(getStringValue(s, "admission_class", ""));
-        tvOldAdmissionNo.setText(getStringValue(s, "old_admission_no", ""));
-        tvDateOfAdmission.setText(getStringValue(s, "date_of_admission", ""));
-        tvDateOfBirth.setText(getStringValue(s, "date_of_birth", ""));
-        tvParentMailId.setText(getStringValue(s, "parent_email", getStringValue(s, "student_email", "")));
-        tvMotherName.setText(getStringValue(s, "mother_name", ""));
-        tvFatherName.setText(getStringValue(s, "father_name", ""));
-        tvPermanentAddress.setText(getStringValue(s, "permanent_address", ""));
+        tvStudentEmail.setText(getStringValue(s, "student_email", ""));
     }
 
     private void bindPlaceholders() {
+        tvAcademicYear.setText("2024-2025");
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            tvStudentEmail.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        } else {
+            tvStudentEmail.setText("");
+        }
         tvName.setText("Student");
         tvClassRoll.setText("Class");
-        tvAadhar.setText("");
-        tvAcademicYear.setText("2024-2025");
-        tvAdmissionClass.setText("");
-        tvOldAdmissionNo.setText("");
-        tvDateOfAdmission.setText("");
-        tvDateOfBirth.setText("");
-        tvParentMailId.setText("");
-        tvMotherName.setText("");
-        tvFatherName.setText("");
-        tvPermanentAddress.setText("");
     }
 
     private String getStringValue(DataSnapshot s, String key, String fallback) {

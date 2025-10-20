@@ -148,19 +148,6 @@
         android:textAllCaps="false"
         />
 
-    <Button
-        android:id="@+id/btn_refresh_stats"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:text="Refresh Statistics"
-        android:layout_marginHorizontal="50dp"
-        android:background="@drawable/style_button"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
-        android:textSize="20sp"
-        android:textAllCaps="false"
-        android:backgroundTint="#2196F3"/>
 
     <Button
         android:id="@+id/btn_finish"

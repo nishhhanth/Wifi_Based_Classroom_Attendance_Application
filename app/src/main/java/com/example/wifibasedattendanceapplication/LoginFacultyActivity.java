@@ -18,6 +18,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginFacultyActivity extends BaseAuthenticatedActivity implements TextWatcher {
 
@@ -26,6 +31,7 @@ public class LoginFacultyActivity extends BaseAuthenticatedActivity implements T
     private TextInputLayout emailInputLayout, passwordInputLayout;
     private String loginPassword, loginEmail;
     private FirebaseAuth mAuth;
+    private DatabaseReference facultyRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +51,7 @@ public class LoginFacultyActivity extends BaseAuthenticatedActivity implements T
         passwordInputLayout.getEditText().addTextChangedListener(this);
 
         mAuth = FirebaseAuth.getInstance();
+        facultyRef = FirebaseDatabase.getInstance().getReference("Faculty");
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,15 +84,12 @@ public class LoginFacultyActivity extends BaseAuthenticatedActivity implements T
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        closeProgressDialog();
                         if (task.isSuccessful()) {
                             Log.d("LoginFaculty", "signInWithEmail:success");
-                            Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-
-                            // Move to faculty home/attendance page
-                            startActivity(new Intent(getApplicationContext(), TakeAttendanceActivity.class));
-                            finish(); // prevent going back to login
+                            // Verify if user is actually a faculty member
+                            verifyFacultyStatus();
                         } else {
+                            closeProgressDialog();
                             Log.w("LoginFaculty", "signInWithEmail:failure", task.getException());
                             Toast.makeText(getApplicationContext(), "Authentication failed: " +
                                     task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -134,5 +138,43 @@ public class LoginFacultyActivity extends BaseAuthenticatedActivity implements T
     private void clearErrors() {
         emailInputLayout.setError(null);
         passwordInputLayout.setError(null);
+    }
+
+    private void verifyFacultyStatus() {
+        // Check if the authenticated user exists in the Faculty collection
+        facultyRef.orderByChild("faculty_email").equalTo(loginEmail)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        closeProgressDialog();
+                        if (dataSnapshot.exists()) {
+                            // User is a faculty member
+                            Log.d("LoginFaculty", "Faculty verification successful");
+                            Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+                            
+                            // Move to faculty home/attendance page
+                            startActivity(new Intent(getApplicationContext(), TakeAttendanceActivity.class));
+                            finish(); // prevent going back to login
+                        } else {
+                            // User is not a faculty member, sign them out
+                            Log.w("LoginFaculty", "User is not a faculty member: " + loginEmail);
+                            mAuth.signOut(); // Sign out the user
+                            Toast.makeText(getApplicationContext(), 
+                                    "Access denied. Only faculty members can login here.", 
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        closeProgressDialog();
+                        Log.e("LoginFaculty", "Faculty verification failed: " + databaseError.getMessage());
+                        // Sign out the user on database error
+                        mAuth.signOut();
+                        Toast.makeText(getApplicationContext(), 
+                                "Verification failed. Please try again.", 
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }
